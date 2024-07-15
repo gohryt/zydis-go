@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"unsafe"
-
-	"github.com/gohryt/zydis-go/zydis"
 )
 
 type (
@@ -55,7 +53,7 @@ func NewEncoder(writer io.Writer) *Encoder {
 func (encoder *Encoder) Encode(request *EncoderRequest) error {
 	length := MAX_INSTRUCTION_LENGTH
 
-	status := zydis.EncoderEncodeInstruction(unsafe.Pointer(request), unsafe.Pointer(&encoder.buffer), unsafe.Pointer(&length))
+	status := EncoderEncodeInstruction(request, &encoder.buffer[0], &length)
 	if !Success(status) {
 		return fmt.Errorf("%w: %d", ErrWrongStatus, status)
 	}
@@ -72,7 +70,7 @@ func AppendRequest(to []byte, request *EncoderRequest) ([]byte, error) {
 	length := MAX_INSTRUCTION_LENGTH
 	buffer := make([]byte, length)
 
-	status := zydis.EncoderEncodeInstruction(unsafe.Pointer(request), unsafe.Pointer(unsafe.SliceData(buffer)), unsafe.Pointer(&length))
+	status := EncoderEncodeInstruction(request, unsafe.SliceData(buffer), &length)
 	if !Success(status) {
 		return nil, fmt.Errorf("%w: %d", ErrWrongStatus, status)
 	}
